@@ -10,7 +10,7 @@ HTTPClient httpGet;
 int yellow = D8;
 int green = D7;
 
-char host[] = "192.168.2.109";  
+char host[] = "192.168.1.23";  
 int port = 3000;                  
 
 extern String RID; // tên sự kiện
@@ -23,7 +23,8 @@ long interval = 5000;
 void setupNetwork() {
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);
-    wifimulti.addAP("BON FPT", "kemtuchon19k");
+//    wifimulti.addAP("BON FPT", "kemtuchon19k");
+    wifimulti.addAP("BON VNPT", "kemtuchon19k");
     wifimulti.addAP("FPT Telecom", "dongthap");
     wifimulti.addAP("AnhTraiMua", "meochonhe");
 
@@ -40,6 +41,7 @@ void setupNetwork() {
 
 void changeState(int pin, boolean st)
 {
+    Serial.println(st);
     if (st) {
       digitalWrite(pin, HIGH);
       Serial.println("Led on!");
@@ -50,10 +52,14 @@ void changeState(int pin, boolean st)
     }
 }
 
-void Led(const char* device, boolean st)
+void Led(String device, boolean st)
 {
   if (device == "LED 1")
-        changeState(yellow, st);
+  {
+      Serial.println(device);
+      Serial.println(st);
+      changeState(yellow, st);
+  }
   if (device == "LED 2")
         changeState(green, st);
 }
@@ -85,7 +91,7 @@ void parseJsonObject()
 
 void parseJsonArray(String s)
 {
-  StaticJsonBuffer<512> bufferred;
+  DynamicJsonBuffer bufferred(512);
   JsonArray& arr = bufferred.parseArray(s);
   if (arr.success())
   {
@@ -93,7 +99,7 @@ void parseJsonArray(String s)
     {
       JsonObject& object = arr[i];
       const char* deviceName = object["deviceName"];
-      const char* typeDevice = object["typeDevice"];
+      const char* typeDevice = object["deviceType"];
       boolean state = object["state"];
       boolean conn = object["connect"];
       Serial.println(deviceName);
@@ -125,15 +131,15 @@ void setup()
     client.connect(host, port);
     Serial.println("connected to server!");
         
-    httpGet.begin("http://192.168.2.109:3000/devices");
+    httpGet.begin("http://192.168.1.23:3000/devices");
     if (httpGet.GET())
     {
-      GET_packet = httpGet.getString();   //Get the request response payload
+      GET_packet = httpGet.getString();   
       Serial.println(GET_packet); 
       parseJsonArray(GET_packet); 
     }
     httpGet.end();
-//    client.send("d2s-ledchange","{\"deviceName\":\"LED 1\", \"typeDevice\":\"LED\", \"description\":\"No description\", \"state\":false, \"connect\":true}");
+//    client.send("c2s-ledchange","{\"deviceName\":\"LED 1\", \"typeDevice\":\"LED\", \"description\":\"No description\", \"state\":true, \"connect\":true}");
 //    Serial.println("sent");
 }
 
@@ -141,10 +147,9 @@ void loop()
 {
 //  if (client.monitor())
 //  {
-////    Serial.println("RID: " + RID);
-////    Serial.println("Rfull: " + Rfull);
-////    parseJsonObject();
-//client.getREST("devices");
+//    Serial.println(RID);
+//    Serial.println(Rfull);
+//    parseJsonObject();
 //  }
     
 }
